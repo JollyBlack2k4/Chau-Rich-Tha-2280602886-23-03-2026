@@ -1,29 +1,29 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
-const { readUsersFromExcel } = require('./utils/excelReader');
-const { sendPasswordEmail } = require('./utils/emailService');
+const { readUsersFromExcel } = require('../utils/excelReader');
+const { sendPasswordEmail } = require('../utils/emailService');
 
 async function importUsers() {
   try {
-    // Define the path to user.xlsx
-    const excelPath = path.join(__dirname, '..', 'data', 'user.xlsx');
+    // Define the path to user.xlsx (up one level from src/)
+    const excelPath = path.join(__dirname, '..', 'user.xlsx');
     
     // Check if file exists
     if (!fs.existsSync(excelPath)) {
-      // For demo purposes, use provided path from attachment context
-      const demoPath = path.join(__dirname, '..', 'user.xlsx');
-      if (fs.existsSync(demoPath)) {
-        console.log(`📁 Using Excel file from: ${demoPath}`);
+      // Try data folder as fallback
+      const dataPath = path.join(__dirname, '..', 'data', 'user.xlsx');
+      if (fs.existsSync(dataPath)) {
+        console.log(`📁 Using Excel file from: ${dataPath}`);
       } else {
-        throw new Error(`Excel file not found at ${excelPath} or ${demoPath}`);
+        throw new Error(`Excel file not found at ${excelPath}`);
       }
     }
 
     console.log('\n🚀 Starting user import process...\n');
 
     // Read users from Excel
-    const actualPath = fs.existsSync(excelPath) ? excelPath : path.join(__dirname, '..', 'user.xlsx');
+    const actualPath = fs.existsSync(excelPath) ? excelPath : path.join(__dirname, '..', 'data', 'user.xlsx');
     const users = readUsersFromExcel(actualPath);
 
     // Store user results
@@ -57,8 +57,8 @@ async function importUsers() {
         });
       }
 
-      // Small delay between emails
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Small delay between emails (increase to 2 seconds for free tier to avoid rate limit)
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     // Print summary
